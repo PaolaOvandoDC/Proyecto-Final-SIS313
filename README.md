@@ -1,19 +1,18 @@
-# Proyecto-Final-SIS313
 Infraestructura para plataforma LMS Sakai con Nginx y MariaDB
-# 🚀 Proyecto Final SIS313: [Título del Proyecto]
+# 🚀 Proyecto Final SIS313: simulacion de una red universitaria
 
 > **Asignatura:** SIS313: Infraestructura, Plataformas Tecnológicas y Redes<br>
 > **Semestre:** 2/2025<br>
 > **Docente:** Ing. Marcelo Quispe Ortega
 
-## 👥 Miembros del Equipo ([Número o denominación del grupo])
+## 👥 Miembros del Equipo ([3])
 
 | Nombre Completo | Rol en el Proyecto | Contacto (GitHub/Email) |
 | :--- | :--- | :--- |
-| [Nombre y Apellido 1] | [Rol Principal: Ej. Arquitecto de Seguridad] | [Usuario de GitHub] |
-| [Nombre y Apellido 2] | [Rol Principal: Ej. Ingeniero de Automatización] | [Usuario de GitHub] |
-| [Nombre y Apellido 3] | [Rol Principal: Ej. Administrador de Sistemas] | [Usuario de GitHub] |
-| [Nombre y Apellido 4] | [Rol Opcional] | [Usuario de GitHub] |
+| [Flores Aquino Nayely] | [arquitecto de sistemas/infraestructura] | [Usuario de GitHub] |
+| [Herrera Jesus David] | [ingeniero de redes y proxy] | [Usuario de GitHub] |
+| [Ovando Calizaya Paola Daniela] | [ingeniero de aplicaciones y despliegue] | [https://github.com/PaolaOvandoDC] |
+| [Salgueiro Gardeasabal Josue David] | [administrador de base de datos (DBA)] | [Usuario de GitHub] |
 
 ## 🎯 I. Objetivo del Proyecto
 
@@ -46,8 +45,6 @@ UFW (Uncomplicated Firewall): Gestión de reglas de firewall para segmentación 
 systemd: Gestión de servicios y arranque automático del sistema
 
 ### 3.2. Conceptos de la Asignatura Puestos en Práctica (T1 - T6)
-
-Marca con un ✅ los temas avanzados de la asignatura que fueron implementados:
 
 ✅ Alta Disponibilidad (T2) y Tolerancia a Fallos:
 
@@ -145,161 +142,28 @@ Mínimo 2GB RAM por VM (4GB recomendado para VM-APP)
 20GB de espacio en disco por VM
 ### 5.3. Ficheros de Configuración Clave
 
-# Actualizar el sistema
-sudo apt update && sudo apt upgrade -y
+paso1 Configurar la red estática, en las tres VMS
 
-# Instalar MariaDB
-sudo apt install mariadb-server mariadb-client -y
-
-# Iniciar y habilitar el servicio
-sudo systemctl start mariadb
-sudo systemctl enable mariadb
-
-# Configuración de seguridad inicial
-sudo mysql_secure_installation
-# Responder: N, Y (password), Y, Y, Y, Y
-
-# Crear base de datos y usuario para Sakai
-sudo mysql -u root -p
-CREATE DATABASE sakai DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'sakai'@'192.168.10.3' IDENTIFIED BY 'TU_PASSWORD_SEGURO';
-GRANT ALL PRIVILEGES ON sakai.* TO 'sakai'@'192.168.10.3';
-FLUSH PRIVILEGES;
-EXIT;
-# Configurar MariaDB para escuchar en todas las interfaces
-sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
-# Cambiar: bind-address = 0.0.0.0
-
-# Reiniciar MariaDB
-sudo systemctl restart mariadb
-
-# Configurar firewall
-sudo ufw allow from 192.168.10.3 to any port 3306
-sudo ufw enable
-5.3. Instalación del Servidor de Aplicaciones (VM-APP: 192.168.10.3)
-# Actualizar el sistema
-sudo apt update && sudo apt upgrade -y
-
-# Instalar Java 11
-sudo apt install openjdk-11-jdk -y
-
-# Verificar instalación
-java -version
-
-# Crear usuario del sistema para Sakai
-sudo useradd -r -m -U -d /opt/sakai -s /bin/bash sakai
-
-# Descargar Apache Tomcat 9
-cd /tmp
-wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.65/bin/apache-tomcat-9.0.65.tar.gz
-
-# Extraer y mover a /opt
-sudo tar xzvf apache-tomcat-9.0.65.tar.gz -C /opt/
-sudo mv /opt/apache-tomcat-9.0.65 /opt/tomcat
-sudo chown -R sakai:sakai /opt/tomcat
-
-# Crear directorios de Sakai
-sudo mkdir -p /opt/sakai/{config,content,ignite,samigo}
-sudo chown -R sakai:sakai /opt/sakai
-
-# Descargar Sakai LMS (ajustar versión según necesidad)
-# Colocar los archivos WAR en /opt/tomcat/webapps/
-
-Crear servicio systemd para Tomcat:
-sudo nano /etc/systemd/system/tomcat.service
-
-[Unit]
-Description=Apache Tomcat - Sakai LMS
-After=network.target
-
-[Service]
-Type=forking
-User=sakai
-Group=sakai
-
-Environment="JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64"
-Environment="CATALINA_HOME=/opt/tomcat"
-Environment="CATALINA_BASE=/opt/tomcat"
-Environment="CATALINA_OPTS=-Xms512M -Xmx2048M -server -XX:+UseParallelGC"
-Environment="JAVA_OPTS=-Djava.awt.headless=true -Dsakai.security=/opt/sakai/config -Dsakai.home=/opt/sakai"
-
-ExecStart=/opt/tomcat/bin/startup.sh
-ExecStop=/opt/tomcat/bin/shutdown.sh
-
-Restart=on-failure
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-
-Configurar Sakai:
-
-# Configuración de Base de Datos
-username@javax.sql.BaseDataSource=sakai
-password@javax.sql.BaseDataSource=TU_PASSWORD_SEGURO
-driverClassName@javax.sql.BaseDataSource=org.mariadb.jdbc.Driver
-vendor@org.sakaiproject.db.api.SqlService=mysql
-hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
-url@javax.sql.BaseDataSource=jdbc:mysql://192.168.10.4:3306/sakai?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
-
-# Configuración del Servidor
-serverUrl=http://192.168.10.2
-serverName=192.168.10.2
-portalPath=/portal
-
-# Directorios
-sakai.home=/opt/sakai
-sakai.security=/opt/sakai/config
-bodyPath@org.sakaiproject.content.api.ContentHostingService=/opt/sakai/content
-
-# Límites de Carga
-content.upload.max=100
-content.upload.ceiling=1024
-
-# Configuración Regional
-locales=es_ES,en_US
-
-Copiar librerías de Sakai:
-
-# Las librerías compartidas deben estar en /opt/tomcat/lib/
-sudo cp /opt/tomcat/webapps/lib/*.jar /opt/tomcat/lib/
-sudo chown sakai:sakai /opt/tomcat/lib/*.jar
-
-Iniciar Tomcat:
-sudo systemctl daemon-reload
-sudo systemctl enable tomcat
-sudo systemctl start tomcat
-
-# Monitorear logs
-sudo tail -f /opt/tomcat/logs/catalina.out
-
-Configurar firewall:
-sudo ufw allow from 192.168.10.2 to any port 8080
-sudo ufw enable
-
-5.4. Instalación del Servidor Proxy (VM-PROXY: 192.168.10.2)
-# Actualizar el sistema
-sudo apt update && sudo apt upgrade -y
-
-# Instalar Nginx
-sudo apt install nginx -y
-
-# Crear configuración para Sakai
-sudo nano /etc/nginx/sites-available/sakai
-
+🌐 INSTALACIÓN Y CONFIGURACIÓN DE NGINX EN EL PROXY
+PASO 1: Instalar Nginx
+bashsudo apt install nginx -y
+bashsudo systemctl status nginx
+PASO 2: Crear el archivo de configuración para Sakai
+Vamos a crear un archivo de configuración específico para Sakai:
+bashsudo nano /etc/nginx/sites-available/sakai
 upstream sakai_backend {
-    server 192.168.10.3:8080;
+    server 192.168.100.10:8080;
 }
 
 server {
     listen 80;
-    server_name _;
-    
+    server_name sakai.local;
+
     client_max_body_size 100M;
-    
+
     access_log /var/log/nginx/sakai_access.log;
     error_log /var/log/nginx/sakai_error.log;
-    
+
     location / {
         proxy_pass http://sakai_backend;
         proxy_set_header Host $host;
@@ -313,54 +177,268 @@ server {
         send_timeout 600;
     }
 }
+PASO 3: Habilitar el sitio de Sakai
+Nginx tiene dos carpetas: sites-available (sitios disponibles) y sites-enabled (sitios activos). Vamos a crear un enlace simbólico:
+bashsudo ln -s /etc/nginx/sites-available/sakai /etc/nginx/sites-enabled/
+Ahora elimina el sitio por defecto para evitar conflictos:
+bashsudo rm /etc/nginx/sites-enabled/default
+PASO 4: Verificar la configuración de Nginx
+Antes de reiniciar, verifica que no haya errores de sintaxis:
+bashsudo nginx -t
+as ver:
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+PASO 5: Reiniciar Nginx
+Si todo está OK, reinicia Nginx para aplicar los cambios:
+bashsudo systemctl restart nginx
+Verifica que sigue corriendo:
+bashsudo systemctl status nginx
+PASO 6: Habilitar Nginx para que inicie automáticamente
+Para que Nginx se inicie automáticamente cuando reinicies la VM:
+bashsudo systemctl enable nginx
+Deberías ver algo como "Created symlink..."
+PASO 7: Verificar que Nginx está escuchando en el puerto 80
+bashsudo netstat -tlnp | grep 80
+🗄️ CONFIGURACIÓN DEL SERVIDOR DE BASE DE DATOS (Lab4.1-DB)
+1. Actualizar repositorios:
+bashsudo apt update
+2. Instalar MariaDB Server:
+bashsudo apt install mariadb-server mariadb-client -y
+3. Iniciar el servicio:
+bashsudo systemctl start mariadb
+4. Verificar que esté corriendo:
+bashsudo systemctl status mariadb
+5. Habilitar para inicio automático:
+bashsudo systemctl enable mariadb
+sudo mysql_secure_installation
+"Enter current password for root (enter for none):"
 
-# Activar el sitio
-sudo ln -s /etc/nginx/sites-available/sakai /etc/nginx/sites-enabled/
+Solo presiona Enter (no hay contraseña aún)
 
-# Verificar configuración
-sudo nginx -t
 
-# Reiniciar Nginx
-sudo systemctl restart nginx
-sudo systemctl enable nginx
+"Switch to unix_socket authentication [Y/n]"
 
-# Configurar firewall
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw enable
+Escribe: n
+Enter
 
-5.5. Ficheros de Configuración Clave
-Estructura de directorios del proyecto:
 
-proyecto-sakai/
-├── config/
-│   ├── database/
-│   │   └── 50-server.cnf
-│   ├── tomcat/
-│   │   ├── tomcat.service
-│   │   └── server.xml
-│   ├── nginx/
-│   │   └── sakai
-│   └── sakai/
-│       └── sakai.properties
-├── scripts/
-│   ├── install_db.sh
-│   ├── install_app.sh
-│   ├── install_proxy.sh
-│   └── backup_db.sh
-└── docs/
-    ├── README.md
-    ├── INSTALL.md
-    └── TROUBLESHOOTING.md
+"Change the root password? [Y/n]"
 
- Archivos importantes:
+Escribe: y
+Enter
 
-/etc/systemd/system/tomcat.service: Servicio systemd para Tomcat
-/opt/sakai/config/sakai.properties: Configuración principal de Sakai
-/etc/nginx/sites-available/sakai: Configuración del proxy Nginx
-/opt/tomcat/conf/server.xml: Configuración de Tomcat
-/etc/mysql/mariadb.conf.d/50-server.cnf: Configuración de MariaDB
 
+"New password:"
+
+Escribe: 1234
+Enter
+"Re-enter new password:"
+
+Escribe: 1234
+Enter
+
+
+"Remove anonymous users? [Y/n]"
+
+Escribe: y
+Enter
+
+
+"Disallow root login remotely? [Y/n]"
+
+Escribe: n (necesitamos acceso remoto)
+Enter
+
+
+"Remove test database and access to it? [Y/n]"
+
+Escribe: y
+Enter
+
+"Reload privilege tables now? [Y/n]"
+
+Escribe: y
+Enter
+6. Editar la configuración:
+sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
+bind-address = 127.0.0.1
+**3. Cambiarla por:**
+bind-address = 0.0.0.0
+7. Reiniciar MariaDB:
+bashsudo systemctl restart mariadb
+8. Verificar que siga corriendo:
+bashsudo systemctl status mariadb
+10. Conectarse a MariaDB:
+bashsudo mysql -u root -p
+11. Crear la base de datos:
+sqlCREATE DATABASE sakai DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+12. Crear el usuario:
+sqlCREATE USER 'sakai'@'%' IDENTIFIED BY '1234';
+13. Dar permisos:
+sqlGRANT ALL PRIVILEGES ON sakai.* TO 'sakai'@'%';
+14. Recargar privilegios:
+sqlFLUSH PRIVILEGES;
+15. Verificar que la BD se creó:
+sqlSHOW DATABASES;
+17. Salir:
+sqlEXIT;
+Crear la base de datos y usuario para Sakai
+PASO 1: Conectarse a MariaDB
+bashsudo mysql -u root -p
+Ingresa la contraseña que configuraste:
+MariaDB [(none)]>
+PASO 2: Crear la base de datos
+sqlCREATE DATABASE sakai DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+Deberías ver: Query OK, 1 row affected
+
+PASO 3: Crear el usuario
+sqlCREATE USER 'sakai'@'%' IDENTIFIED BY '1234';
+PASO 4: Dar permisos al usuario
+sqlGRANT ALL PRIVILEGES ON sakai.* TO 'sakai'@'%';
+Deberías ver: Query OK, 0 rows affected
+
+PASO 5: Recargar privilegios
+sqlFLUSH PRIVILEGES;
+PASO 6: Verificar que la base de datos existe
+sqlSHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| information_schema |
+| mysql              |
+| performance_schema |
+| sakai              | <-- Esta es la nuestra
+| sys                |
++--------------------+
+
+🖥️ CONFIGURACIÓN DEL SERVIDOR DE APLICACIONES
+PASO 1: Instalar herramientas básicas
+bashsudo apt install wget curl vim net-tools -y
+
+PASO 2: Instalar Java 11 (OpenJDK)
+Sakai necesita Java para funcionar. Instalemos Java 11:
+bashsudo apt install openjdk-11-jdk -y
+PASO 3: Configurar variables de entorno de Java
+bashsudo nano /etc/environment
+```
+
+Al final del archivo, agrega estas líneas:
+```
+JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+CATALINA_HOME="/opt/tomcat"
+Aplica los cambios:
+bashsource /etc/environment
+Verifica:
+bashecho $JAVA_HOME
+PASO 4: Crear usuario para Sakai
+Por seguridad, Sakai no debe correr como root. Creamos un usuario dedicado:
+bashsudo useradd -m -s /bin/bash sakai
+Ponle una contraseña:
+bashsudo passwd sakai
+PASO 5: Descargar Apache Tomcat
+Tomcat es el servidor de aplicaciones donde correrá Sakai:
+bashcd /tmp
+bashwget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.65/bin/apache-tomcat-9.0.65
+PASO 6: Instalar Tomcat
+Crear el directorio:
+bashsudo mkdir /opt/tomcat
+Extraer Tomcat:
+bashsudo tar -xzvf apache-tomcat-9.0.65.tar.gz -C /opt/tomcat --strip-components=1
+Cambiar el propietario al usuario sakai:
+bashsudo chown -R sakai:sakai /opt/tomcat
+Verifica que se instaló:
+bashls -la /opt/tomcat/
+PASO 7: Crear directorios para Sakai
+bashsudo mkdir -p /opt/sakai/config
+bashsudo mkdir -p /opt/sakai/content
+bashsudo chown -R sakai:sakai /opt/sakai
+PASO 8: Descargar Sakai
+cd /tmp
+wget https://source.sakaiproject.org/release/23.3/artifacts/sakai-bin-23.3.tar.gz
+PASO 9: Extraer Sakai en Tomcat
+bashcd /tmp
+bashsudo tar -xzvf sakai-bin-23.3.tar.gz -C /opt/tomcat/webapps/
+ PASO 10: Ajustar permisos
+bashsudo chown -R sakai:sakai /opt/tomcat/webapps/*
+Verifica que se instaló correctamente:
+bashls -la /opt/tomcat/webapps/
+PASO 11: Instalar el driver de MariaDB
+bashcd /opt/tomcat/lib
+bashsudo wget https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.0.8/mariadb-java-client-3.0.8.jar
+Ajustar permisos:
+bashsudo chown sakai:sakai mariadb-java-client-3.0.8.jar
+Verifica:
+bashls -lh mariadb-java-client-3.0.8.jar
+PASO 12: Crear el archivo de configuración de Sakai
+bashsudo nano /opt/sakai/config/sakai.properties
+# ========================================
+# CONFIGURACIÓN DE BASE DE DATOS
+# ========================================
+username@javax.sql.BaseDataSource=sakaiuser
+password@javax.sql.BaseDataSource=SakaiPass2024!
+vendor@org.sakaiproject.db.api.SqlService=mysql
+driverClassName@javax.sql.BaseDataSource=org.mariadb.jdbc.Driver
+hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+url@javax.sql.BaseDataSource=jdbc:mysql://192.168.100.20:3306/sakai?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+
+# ========================================
+# CONFIGURACIÓN DEL SERVIDOR
+# ========================================
+serverUrl=http://sakai.local
+serverName=sakai.local
+portalPath=/portal
+
+# ========================================
+# DIRECTORIO DE CONTENIDO
+# ========================================
+bodyPath@org.sakaiproject.content.api.ContentHostingService=/opt/sakai/content
+
+# ========================================
+# CONFIGURACIÓN DE MEMORIA
+# ========================================
+memory.db=true
+
+# ========================================
+# IDIOMA POR DEFECTO
+# ========================================
+locales=es_ES,en_US
+sudo chown sakai:sakai /opt/sakai/config/sakai.properties
+PASO 13: Configurar memoria de Tomcat
+bashsudo nano /opt/tomcat/bin/setenv.sh
+bashexport JAVA_OPTS="-server -Xms1g -Xmx2g -XX:+UseG1GC -Djava.awt.headless=true -Djava.net.preferIPv4Stack=true"
+export CATALINA_OPTS="-Dsakai.home=/opt/sakai -Dsakai.security=/opt/sakai/config"
+sudo chmod +x /opt/tomcat/bin/setenv.sh
+PASO 14: Crear servicio systemd para Tomcat
+bashsudo nano /etc/systemd/system/tomcat.service
+[Unit]
+Description=Apache Tomcat - Sakai LMS
+After=network.target
+
+[Service]
+Type=forking
+User=sakai
+Group=sakai
+
+Environment="JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64"
+Environment="CATALINA_PID=/opt/tomcat/temp/tomcat.pid"
+Environment="CATALINA_HOME=/opt/tomcat"
+Environment="CATALINA_BASE=/opt/tomcat"
+
+ExecStart=/opt/tomcat/bin/startup.sh
+ExecStop=/opt/tomcat/bin/shutdown.sh
+
+RestartSec=10
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+PASO 15: Recargar systemd y habilitar Tomcat
+bashsudo systemctl daemon-reload
+bashsudo systemctl enable tomcat
+PASO 16: ¡INICIAR SAKAI!
+bashsudo systemctl start tomcat
+PASO 17: Ver los logs en tiempo real
+bashtail -f /opt/tomcat/logs/catalina.out
 **Incluir además los archivos de configuración y software a utilizar dentro del proyecto y organizados en carpetas.**
 ## ⚠️ VI. Pruebas y Validación
 
