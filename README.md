@@ -62,6 +62,7 @@ Configuración de autenticación de base de datos con usuarios específicos por 
 
 ✅ Automatización y Gestión (T6):
 
+
 Scripts de instalación y configuración automatizados
 Gestión de servicios con systemd
 Configuración centralizada mediante archivos properties
@@ -147,7 +148,7 @@ paso1 Configurar la red estática, en las tres VMS
 🌐 INSTALACIÓN Y CONFIGURACIÓN DE NGINX EN EL PROXY
 PASO 1: Instalar Nginx
 
-bashsudo apt install nginx -y
+```bashsudo apt install nginx -y```
 
 bashsudo systemctl status nginx
 
