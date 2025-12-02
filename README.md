@@ -149,13 +149,13 @@ PASO 1: Instalar Nginx
 
 ``` sudo apt install nginx -y ```
 
-bashsudo systemctl status nginx
+```sudo systemctl status nginx```
 
 PASO 2: Crear el archivo de configuración para Sakai
 
 Vamos a crear un archivo de configuración específico para Sakai:
 
-bashsudo nano /etc/nginx/sites-available/sakai
+```sudo nano /etc/nginx/sites-available/sakai```
 
 upstream sakai_backend {
     server 192.168.100.10:8080;
@@ -191,17 +191,17 @@ Nginx tiene dos carpetas: sites-available (sitios disponibles) y sites-enabled (
 
 activos). Vamos a crear un enlace simbólico:
 
-bashsudo ln -s /etc/nginx/sites-available/sakai /etc/nginx/sites-enabled/
+```sudo ln -s /etc/nginx/sites-available/sakai /etc/nginx/sites-enabled/```
 
 Ahora elimina el sitio por defecto para evitar conflictos:
 
-bashsudo rm /etc/nginx/sites-enabled/default
+```sudo rm /etc/nginx/sites-enabled/default```
 
 PASO 4: Verificar la configuración de Nginx
 
 Antes de reiniciar, verifica que no haya errores de sintaxis:
 
-bashsudo nginx -t
+```sudo nginx -t```
 
 as ver:
 
@@ -213,47 +213,47 @@ PASO 5: Reiniciar Nginx
 
 Si todo está OK, reinicia Nginx para aplicar los cambios:
 
-bashsudo systemctl restart nginx
+```sudo systemctl restart nginx```
 
 Verifica que sigue corriendo:
 
-bashsudo systemctl status nginx
+```sudo systemctl status nginx```
 
 PASO 6: Habilitar Nginx para que inicie automáticamente
 
 Para que Nginx se inicie automáticamente cuando reinicies la VM:
 
-bashsudo systemctl enable nginx
+```sudo systemctl enable nginx```
 
 Deberías ver algo como "Created symlink..."
 
 PASO 7: Verificar que Nginx está escuchando en el puerto 80
 
-bashsudo netstat -tlnp | grep 80
+```sudo netstat -tlnp | grep 80```
 
 🗄️ CONFIGURACIÓN DEL SERVIDOR DE BASE DE DATOS (Lab4.1-DB)
 
 1. Actualizar repositorios:
 
-bashsudo apt update
+```sudo apt update```
 
 2. Instalar MariaDB Server:
 
-bashsudo apt install mariadb-server mariadb-client -y
+```sudo apt install mariadb-server mariadb-client -y```
 
 3. Iniciar el servicio:
 
-bashsudo systemctl start mariadb
+```sudo systemctl start mariadb```
 
 4. Verificar que esté corriendo:
 
-bashsudo systemctl status mariadb
+```sudo systemctl status mariadb```
 
 5. Habilitar para inicio automático:
 
-bashsudo systemctl enable mariadb
+```sudo systemctl enable mariadb```
 
-sudo mysql_secure_installation
+```sudo mysql_secure_installation```
 
 "Enter current password for root (enter for none):"
 
@@ -262,99 +262,99 @@ Solo presiona Enter (no hay contraseña aún)
 
 "Switch to unix_socket authentication [Y/n]"
 
-Escribe: n
+Escribe: ```n```
 Enter
 
 
 "Change the root password? [Y/n]"
 
-Escribe: y
+Escribe: ```y```
 Enter
 
 
 "New password:"
 
-Escribe: 1234
+Escribe: ```1234```
 Enter
 "Re-enter new password:"
 
-Escribe: 1234
+Escribe: ```1234```
 Enter
 
 
 "Remove anonymous users? [Y/n]"
 
-Escribe: y
+Escribe: ```y```
 Enter
 
 
 "Disallow root login remotely? [Y/n]"
 
-Escribe: n (necesitamos acceso remoto)
+Escribe: ```n``` (necesitamos acceso remoto)
 Enter
 
 
 "Remove test database and access to it? [Y/n]"
 
-Escribe: y
+Escribe: ```y```
 Enter
 
 "Reload privilege tables now? [Y/n]"
 
-Escribe: y
+Escribe: ```y```
 Enter
 
 6. Editar la configuración:
 
-sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf
+```sudo nano /etc/mysql/mariadb.conf.d/50-server.cnf```
 
-bind-address = 127.0.0.1
+```bind-address = 127.0.0.1```
 
 **3. Cambiarla por:**
 
-bind-address = 0.0.0.0
+```bind-address = 0.0.0.0```
 
 7. Reiniciar MariaDB:
 
-bashsudo systemctl restart mariadb
+```sudo systemctl restart mariadb```
 
 8. Verificar que siga corriendo:
 
-bashsudo systemctl status mariadb
+```sudo systemctl status mariadb```
 
 10. Conectarse a MariaDB:
 
-bashsudo mysql -u root -p
+```sudo mysql -u root -p```
 
 11. Crear la base de datos:
 
-sqlCREATE DATABASE sakai DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```CREATE DATABASE sakai DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;```
 
 12. Crear el usuario:
 
-sqlCREATE USER 'sakai'@'%' IDENTIFIED BY '1234';
+```CREATE USER 'sakai'@'%' IDENTIFIED BY '1234';```
 
 13. Dar permisos:
 
-sqlGRANT ALL PRIVILEGES ON sakai.* TO 'sakai'@'%';
+```GRANT ALL PRIVILEGES ON sakai.* TO 'sakai'@'%';```
 
 14. Recargar privilegios:
 
-sqlFLUSH PRIVILEGES;
+F```LUSH PRIVILEGES;```
 
 15. Verificar que la BD se creó:
 
-sqlSHOW DATABASES;
+```SHOW DATABASES;```
 
 17. Salir:
 
-sqlEXIT;
+```EXIT;```
 
 Crear la base de datos y usuario para Sakai
 
 PASO 1: Conectarse a MariaDB
 
-bashsudo mysql -u root -p
+```sudo mysql -u root -p```
 
 Ingresa la contraseña que configuraste:
 
@@ -362,28 +362,28 @@ MariaDB [(none)]>
 
 PASO 2: Crear la base de datos
 
-sqlCREATE DATABASE sakai DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```CREATE DATABASE sakai DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;```
 
 Deberías ver: Query OK, 1 row affected
 
 
 PASO 3: Crear el usuario
 
-sqlCREATE USER 'sakai'@'%' IDENTIFIED BY '1234';
+```CREATE USER 'sakai'@'%' IDENTIFIED BY '1234';```
 
 PASO 4: Dar permisos al usuario
 
-sqlGRANT ALL PRIVILEGES ON sakai.* TO 'sakai'@'%';
+```GRANT ALL PRIVILEGES ON sakai.* TO 'sakai'@'%';```
 
 Deberías ver: Query OK, 0 rows affected
 
 PASO 5: Recargar privilegios
 
-sqlFLUSH PRIVILEGES;
+```FLUSH PRIVILEGES;```
 
 PASO 6: Verificar que la base de datos existe
 
-sqlSHOW DATABASES;
+```SHOW DATABASES;```
 +--------------------+
 | Database           |
 +--------------------+
@@ -398,65 +398,65 @@ sqlSHOW DATABASES;
 
 PASO 1: Instalar herramientas básicas
 
-bashsudo apt install wget curl vim net-tools -y
+```sudo apt install wget curl vim net-tools -y```
 
 PASO 2: Instalar Java 11 (OpenJDK)
 
 Sakai necesita Java para funcionar. Instalemos Java 11:
 
-bashsudo apt install openjdk-11-jdk -y
+```sudo apt install openjdk-11-jdk -y```
 
 PASO 3: Configurar variables de entorno de Java
 
-bashsudo nano /etc/environment
+```sudo nano /etc/environment```
 
-JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"
+```JAVA_HOME="/usr/lib/jvm/java-11-openjdk-amd64"```
 
-CATALINA_HOME="/opt/tomcat"
+```CATALINA_HOME="/opt/tomcat"```
 
 Aplica los cambios:
 
-bashsource /etc/environment
+```source /etc/environment```
 
 Verifica:
 
-bashecho $JAVA_HOME
+```echo $JAVA_HOME```
 
 PASO 4: Crear usuario para Sakai
 
 Por seguridad, Sakai no debe correr como root. Creamos un usuario dedicado:
 
-bashsudo useradd -m -s /bin/bash sakai
+```sudo useradd -m -s /bin/bash sakai```
 
 Ponle una contraseña:
 
-bashsudo passwd sakai
+```sudo passwd sakai```
 
 PASO 5: Descargar Apache Tomcat
 
 Tomcat es el servidor de aplicaciones donde correrá Sakai:
 
-bashcd /tmp
+```cd /tmp```
 
-bashwget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.65/bin/apache-tomcat-9.0.65
+```wget https://archive.apache.org/dist/tomcat/tomcat-9/v9.0.65/bin/apache-tomcat-9.0.65```
 
 PASO 6: Instalar Tomcat
 
 Crear el directorio:
 
-bashsudo mkdir /opt/tomcat
+```sudo mkdir /opt/tomcat```
 
 Extraer Tomcat:
 
-bashsudo tar -xzvf apache-tomcat-9.0.65.tar.gz -C /opt/tomcat --strip-components=1
+```sudo tar -xzvf apache-tomcat-9.0.65.tar.gz -C /opt/tomcat --strip-components=1```
 
 Cambiar el propietario al usuario sakai:
 
-bashsudo chown -R sakai:sakai /opt/tomcat
+```sudo chown -R sakai:sakai /opt/tomcat```
 
 Verifica que se instaló:
 
-bashls -la /opt/tomcat/
+```ls -la /opt/tomcat/```
 
 PASO 7: Crear directorios para Sakai
 
@@ -464,91 +464,91 @@ bashsudo mkdir -p /opt/sakai/config
 
 bashsudo mkdir -p /opt/sakai/content
 
-bashsudo chown -R sakai:sakai /opt/sakai
+```sudo chown -R sakai:sakai /opt/sakai```
 
 PASO 8: Descargar Sakai
 
-cd /tmp
+```cd /tmp```
 
-wget https://source.sakaiproject.org/release/23.3/artifacts/sakai-bin-23.3.tar.gz
+```wget https://source.sakaiproject.org/release/23.3/artifacts/sakai-bin-23.3.tar.gz```
 
 PASO 9: Extraer Sakai en Tomcat
 
-bashcd /tmp
+```cd /tmp```
 
-bashsudo tar -xzvf sakai-bin-23.3.tar.gz -C /opt/tomcat/webapps/
+```sudo tar -xzvf sakai-bin-23.3.tar.gz -C /opt/tomcat/webapps```
 
  PASO 10: Ajustar permisos
 
-bashsudo chown -R sakai:sakai /opt/tomcat/webapps/*
+```sudo chown -R sakai:sakai /opt/tomcat/webapps/*```
 
 Verifica que se instaló correctamente:
 
-bashls -la /opt/tomcat/webapps/
+```ls -la /opt/tomcat/webapps/```
 
 PASO 11: Instalar el driver de MariaDB
 
-bashcd /opt/tomcat/lib
+```cd /opt/tomcat/lib```
 
-bashsudo wget https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.0.8/mariadb-
+```sudo wget https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.0.8/mariadb-```
 
-java-client-3.0.8.jar
+```java-client-3.0.8.jar```
 
 Ajustar permisos:
 
-bashsudo chown sakai:sakai mariadb-java-client-3.0.8.jar
+```sudo chown sakai:sakai mariadb-java-client-3.0.8.jar```
 
 Verifica:
 
-bashls -lh mariadb-java-client-3.0.8.jar
+```ls -lh mariadb-java-client-3.0.8.jar```
 
 PASO 12: Crear el archivo de configuración de Sakai
 
-bashsudo nano /opt/sakai/config/sakai.properties
+```sudo nano /opt/sakai/config/sakai.properties```
 
-username@javax.sql.BaseDataSource=sakaiuser
+```username@javax.sql.BaseDataSource=sakaiuser```
 
-password@javax.sql.BaseDataSource=SakaiPass2024!
+```password@javax.sql.BaseDataSource=SakaiPass2024!```
 
-vendor@org.sakaiproject.db.api.SqlService=mysql
+```vendor@org.sakaiproject.db.api.SqlService=mysql```
 
-driverClassName@javax.sql.BaseDataSource=org.mariadb.jdbc.Driver
+```driverClassName@javax.sql.BaseDataSource=org.mariadb.jdbc.Driver```
 
-hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect
+```hibernate.dialect=org.hibernate.dialect.MySQL5InnoDBDialect```
 
-url@javax.sql.BaseDataSource=jdbc:mysql://192.168.100.20:3306/sakai?
+```url@javax.sql.BaseDataSource=jdbc:mysql://192.168.100.20:3306/sakai?```
 
-useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+```useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC```
 
-serverUrl=http://sakai.local
+```serverUrl=http://sakai.local```
 
-serverName=sakai.local
+```serverName=sakai.local```
 
-portalPath=/portal
+```portalPath=/portal```
 
-bodyPath@org.sakaiproject.content.api.ContentHostingService=/opt/sakai/content
+```bodyPath@org.sakaiproject.content.api.ContentHostingService=/opt/sakai/content```
 
-memory.db=true
+```memory.db=true```
 
-locales=es_ES,en_US
+```locales=es_ES,en_US```
 
-sudo chown sakai:sakai /opt/sakai/config/sakai.properties
+```sudo chown sakai:sakai /opt/sakai/config/sakai.properties```
 
 PASO 13: Configurar memoria de Tomcat
 
-bashsudo nano /opt/tomcat/bin/setenv.sh
+```sudo nano /opt/tomcat/bin/setenv.sh```
 
-bashexport JAVA_OPTS="-server -Xms1g -Xmx2g -XX:+UseG1GC -Djava.awt.headless=true -
+export JAVA_OPTS="-server -Xms1g -Xmx2g -XX:+UseG1GC -Djava.awt.headless=true -
 
 Djava.net.preferIPv4Stack=true"
 
 export CATALINA_OPTS="-Dsakai.home=/opt/sakai -Dsakai.security=/opt/sakai/config"
 
-sudo chmod +x /opt/tomcat/bin/setenv.sh
+```sudo chmod +x /opt/tomcat/bin/setenv.sh```
 
 PASO 14: Crear servicio systemd para Tomcat
 
-bashsudo nano /etc/systemd/system/tomcat.service
+```sudo nano /etc/systemd/system/tomcat.service```
 
 [Unit]
 
@@ -583,17 +583,17 @@ WantedBy=multi-user.target
 
 PASO 15: Recargar systemd y habilitar Tomcat
 
-bashsudo systemctl daemon-reload
+```sudo systemctl daemon-reload```
 
-bashsudo systemctl enable tomcat
+```sudo systemctl enable tomcat```
 
 PASO 16: ¡INICIAR SAKAI!
 
-bashsudo systemctl start tomcat
+```sudo systemctl start tomcat```
 
 PASO 17: Ver los logs en tiempo real
 
-bashtail -f /opt/tomcat/logs/catalina.out
+```tail -f /opt/tomcat/logs/catalina.out```
 
 **Incluir además los archivos de configuración y software a utilizar dentro del proyecto y organizados en carpetas.**
 ## ⚠️ VI. Pruebas y Validación
