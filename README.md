@@ -213,7 +213,9 @@ PASO 5: Reiniciar Nginx
 
 Si todo está OK, reinicia Nginx para aplicar los cambios:
 
-bashsudo systemctl restart nginx
+```
+sudo systemctl restart nginx
+```
 
 Verifica que sigue corriendo:
 
