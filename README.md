@@ -147,8 +147,9 @@ paso1 Configurar la red estática, en las tres VMS
 🌐 INSTALACIÓN Y CONFIGURACIÓN DE NGINX EN EL PROXY
 PASO 1: Instalar Nginx
 
-bashsudo apt install nginx -y
-
+```bash
+sudo apt install nginx -y
+```
 bashsudo systemctl status nginx
 
 PASO 2: Crear el archivo de configuración para Sakai
