@@ -149,7 +149,7 @@ PASO 1: Instalar Nginx
 
 ``` sudo apt install nginx -y ```
 
-bashsudo systemctl status nginx
+\`\`\`sudo systemctl status nginx\`\`\`
 
 PASO 2: Crear el archivo de configuración para Sakai
 
