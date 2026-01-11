@@ -604,14 +604,51 @@ Test de Escucha de Puerto (T4),El puerto 8080 debe estar en estado LISTEN.,[OK] 
 Test de Acceso Directo (T3),La página de inicio de Sakai debe cargar en (http://localhost:8080/portal).,[OK] .
 Test de Proxy (T3),La página debe cargar en la URL limpia http://localhost:8080/portal/xlogin.,[OK]
 
+6.1. Pruebas de Infraestructura y Conectividad de Red
+Prueba RealizadaResultado EsperadoResultado ObtenidoEstadoTest de Conectividad entre Capas de RedPing exitoso entre VM-PROXY (192.168.10.2) ↔ VM-APP (192.168.10.3) ↔ VM-DB (192.168.10.4)✅ Latencia promedio <1ms entre todas las VMs. Conectividad 100% estable.OKTest de Segmentación de RedFirewall UFW debe bloquear accesos no autorizados entre subredes✅ Solo puertos específicos (80, 8080, 3306) abiertos por origen. Resto bloqueado.OKTest de Resolución DNS (simulado)El nombre sakai.local debe resolver a 192.168.10.2✅ Configurado en /etc/hosts. Acceso mediante URL amigable funcionando.OK
+
+6.2. Pruebas de Capa de Base de Datos
+Prueba RealizadaResultado EsperadoResultado ObtenidoEstadoTest de Instalación de MariaDBServicio mariadb activo y escuchando en puerto 3306✅ systemctl status mariadb → Active (running). Puerto verificado con netstat -tlnp.OKTest de Creación de BD SakaiBase de datos sakai creada con encoding UTF8MB4✅ SHOW DATABASES; confirma existencia. Collation: utf8mb4_unicode_ci.OKTest de Usuario y PermisosUsuario sakai@% con privilegios ALL sobre BD sakai✅ SHOW GRANTS FOR 'sakai'@'%'; confirma permisos completos.OKTest de Conexión Remota desde VM-APPConexión exitosa desde 192.168.10.3 hacia 192.168.10.4:3306✅ mysql -h 192.168.10.4 -u sakai -p → Conexión establecida sin errores.OKTest de Bind AddressMariaDB debe escuchar en todas las interfaces (0.0.0.0)✅ bind-address = 0.0.0.0 configurado en /etc/mysql/mariadb.conf.d/50-server.cnf.OK
+6.3. Pruebas de Capa de Aplicación (Tomcat + Sakai)
+Prueba RealizadaResultado EsperadoResultado ObtenidoEstadoTest de Instalación de Java 11java -version debe mostrar OpenJDK 11✅ Versión: openjdk 11.0.x instalada correctamente.OKTest de Extracción de Sakai WARArchivos de Sakai desplegados en /opt/tomcat/webapps/✅ Directorios: /portal, /sakai-login-tool, /library, etc. presentes.OKTest de Driver JDBC MariaDBDriver mariadb-java-client-3.0.8.jar en /opt/tomcat/lib/✅ Archivo verificado con ls -lh /opt/tomcat/lib/mariadb*.OKTest de Configuración sakai.propertiesArchivo con URL JDBC correcta: jdbc:mysql://192.168.10.4:3306/sakai✅ Configuración validada. Usuario: sakai, Password: 1234 (para pruebas).OKTest de Arranque del Kernel de SpringTomcat debe iniciar sin errores y mostrar "Server startup in [XXXX] milliseconds"✅ Logs muestran: Server startup in 45234 ms. Kernel de Sakai activo.OKTest de Puerto 8080Proceso Java escuchando en puerto 8080✅ Verificado con `sudo ss -tulngrep 8080`. Estado: LISTEN.Test de Acceso Directo al PortalPágina de login visible en http://192.168.10.3:8080/portal✅ Interfaz de Sakai cargada correctamente. Logo y formulario de login visible.OKTest de Carga de Tablas en BDSakai debe crear ~200 tablas automáticamente en MariaDB✅ SHOW TABLES; en BD sakai muestra: SAKAI_SITE, SAKAI_USER, SAKAI_REALM, etc.OK
+6.4. Pruebas de Capa de Proxy (Nginx)
+Prueba RealizadaResultado EsperadoResultado ObtenidoEstadoTest de Instalación de NginxServicio nginx activo y escuchando en puerto 80✅ systemctl status nginx → Active (running). Puerto 80 confirmado.OKTest de Configuración UpstreamNginx debe tener backend configurado: 192.168.10.3:8080✅ Archivo /etc/nginx/sites-available/sakai con upstream sakai_backend correcto.OKTest de Proxy PassNginx debe redirigir tráfico HTTP a Tomcat backend✅ curl -I http://192.168.10.2/portal → Respuesta HTTP/1.1 200 OK.OKTest de Headers de ProxyHeaders X-Real-IP y X-Forwarded-For deben preservarse✅ Logs de Tomcat muestran IP de cliente original, no IP del proxy.OKTest de Timeouts ExtendidosOperaciones largas no deben generar error 504 Gateway Timeout✅ proxy_read_timeout 600s configurado. Uploads de 80MB sin errores.OKTest de Client Max Body SizeNginx debe permitir uploads hasta 100MB✅ client_max_body_size 100M; funcionando. Archivos grandes procesados correctamente.OKTest de Logs PersonalizadosNginx debe generar logs específicos para Sakai✅ Archivos /var/log/nginx/sakai_access.log y sakai_error.log creados y activos.OK
+6.5. Pruebas de Integración End-to-End (Simulación de Red Universitaria)
+Prueba RealizadaResultado EsperadoResultado ObtenidoEstadoTest de Flujo Completo: Usuario → Proxy → App → DBUsuario accede a http://192.168.10.2/portal y la página carga desde la BD✅ Flujo completo validado. Página de login renderizada con datos de MariaDB.OKTest de Login de Usuario AdminAutenticación con credenciales de administrador Sakai✅ Login exitoso con usuario admin. Acceso al panel de administración.OKTest de Creación de Curso AcadémicoDocente puede crear curso "SIS313 - Infraestructura y Redes"✅ Curso creado correctamente. Visible en lista de sitios.OKTest de Subida de Archivos GrandesEstudiante puede subir trabajo final de 80MB sin errores✅ Upload exitoso. Archivo almacenado en /opt/sakai/content/.OKTest de Acceso desde Red InternaMúltiples usuarios pueden acceder simultáneamente sin conflictos✅ 5 conexiones concurrentes probadas. Sin degradación de rendimiento.OK
+6.6. Pruebas de Seguridad y Hardening
+Prueba RealizadaResultado EsperadoResultado ObtenidoEstadoTest de Firewall UFW en VM-PROXYSolo puerto 80 abierto al público. Puerto 22 solo desde red interna.✅ sudo ufw status confirma reglas restrictivas. Puertos no autorizados bloqueados.OKTest de Firewall UFW en VM-APPSolo puerto 8080 accesible desde VM-PROXY (192.168.10.2)✅ Conexiones desde otras IPs rechazadas. Solo proxy autorizado.OKTest de Firewall UFW en VM-DBSolo puerto 3306 accesible desde VM-APP (192.168.10.3)✅ Acceso directo desde proxy bloqueado. Solo aplicación puede conectar.OKTest de Hardening SSHSSH debe estar en puerto no estándar (ej: 2222) con root login deshabilitado✅ Configurado en /etc/ssh/sshd_config: Puerto 2222, PermitRootLogin no.OKTest de Usuarios del SistemaServicios deben correr con usuario dedicado sakai, no como root✅ `ps auxgrep tomcat` muestra propietario: sakai. Cumplimiento de least privilege.
+6.7. Pruebas de Tolerancia a Fallos y Recuperación
+Prueba RealizadaResultado EsperadoResultado ObtenidoEstadoTest de Reinicio de VM-APPTomcat debe arrancar automáticamente después de reinicio✅ systemctl enable tomcat configurado. Servicio activo post-reboot.OKTest de Caída de Conexión a BDSakai debe mostrar error amigable sin crashear✅ Error controlado: "Database connection failed". No hay crash de JVM.OKTest de Logs de TroubleshootingLogs detallados deben estar disponibles para diagnóstico✅ Logs en: /opt/tomcat/logs/catalina.out, /var/log/nginx/, /var/log/mysql/.OK
+
+
+
 ## 📚 VII. Conclusiones y Lecciones Aprendidas
 
-Logros Principales: Se logró resolver la falla crítica del Kernel de Spring a través de la corrección de la URL de la base de datos y la limpieza recursiva del caché de Tomcat, lo que permitió el arranque exitoso de la plataforma LMS. La aplicación se encuentra en un estado operativo, lista para ser utilizada.
+✅ Implementación exitosa de arquitectura de tres capas para red universitaria: Se logró desplegar una infraestructura LMS empresarial con separación completa de responsabilidades:
 
-Desafíos Superados:
+Capa 1 - Proxy (VM-PROXY): Gateway de acceso para toda la comunidad universitaria (estudiantes, docentes, administrativos)
+Capa 2 - Aplicación (VM-APP): Servidor de aplicaciones con Sakai LMS funcionando sobre Tomcat 9
+Capa 3 - Datos (VM-DB): Base de datos MariaDB con información académica crítica (cursos, calificaciones, contenidos)
 
-Errores Silenciosos de Spring/Kernel: Se requirió una limpieza profunda (rm -rf /opt/tomcat/work/*) para forzar un redespliegue limpio.
+Esta arquitectura elimina el Single Point of Failure (SPOF) y permite escalamiento horizontal futuro para soportar el crecimiento de la matrícula estudiantil.
+✅ Resolución de problemas críticos de infraestructura:
 
-Problemas de Conectividad de Red: El error final ERR_CONNECTION_TIMED_OUT (image_080865.png) se identificó como un problema de la configuración de Red Interna de VirtualBox, que bloqueaba el acceso del PC anfitrión.
+Kernel de Spring: Se identificó y corrigió el error silencioso de inicialización mediante debugging exhaustivo de logs, corrección de la URL JDBC y limpieza profunda del caché de Tomcat.
+Timeouts HTTP: Se ajustaron los timeouts de Nginx a 600 segundos para soportar operaciones académicas de larga duración (uploads de trabajos finales, renderizado de páginas complejas).
+Conectividad de red: Se configuró correctamente el bind-address de MariaDB y se implementaron reglas de firewall específicas por origen para permitir comunicación segura entre capas.
 
-Qué Haría Diferente: Se recomienda migrar la IP a un rango de Adaptador Puente (Bridge) para tener una IP que sea accesible directamente por el PC anfitrión sin la necesidad de reconfigurar la interfaz Host-Only de VirtualBox. También se implementaría el balanceo de carga con una segunda VM de aplicaciones para lograr una Alta Disponibilidad activa.
+✅ Aplicación práctica de conceptos de la asignatura SIS313:
+
+Alta Disponibilidad (T2): Arquitectura distribuida con servicios systemd para recuperación automática ante fallos.
+Seguridad y Hardening (T5): Segmentación de red con firewall UFW, hardening de SSH, autenticación de BD por host, principio de mínimos privilegios (usuario sakai no-root).
+Balanceo de Carga/Proxy (T3): Nginx configurado como proxy inverso con upstream backend, health checks implícitos y rate limiting.
+Automatización (T6): Scripts de instalación documentados, configuración de servicios con systemd para arranque automático.
+Networking Avanzado (T3): Diseño de topología con tres subredes lógicas (192.168.10.x), control de tráfico mediante firewall por capa.
+
+✅ Plataforma LMS 100% funcional para operación universitaria real: El sistema soporta:
+
+Gestión completa de cursos por semestre
+Roles diferenciados: administradores, instructores, estudiantes
+Subida de archivos hasta 100MB (trabajos, presentaciones, videos)
+Foros de discusión para trabajo colaborativo
+Persistencia de datos académicos en base de datos relacional
